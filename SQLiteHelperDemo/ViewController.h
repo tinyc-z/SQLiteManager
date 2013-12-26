@@ -10,4 +10,6 @@
 
 @interface ViewController : UIViewController
 
+- (IBAction)onStart:(id)sender;
+
 @end
