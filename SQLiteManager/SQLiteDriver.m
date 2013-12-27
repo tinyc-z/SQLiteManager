@@ -10,7 +10,8 @@
 
 @interface SQLiteDriver()
 
-@property(nonatomic,strong)dispatch_queue_t taskQueue;
+@property(assign)dispatch_queue_t taskQueue;
+
 @end
 
 
