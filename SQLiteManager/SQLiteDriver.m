@@ -70,9 +70,13 @@
         int res=sqlite3_exec(self.dbHandler, [sql UTF8String], NULL, NULL, &err);
         if (res!= SQLITE_OK) {
             NSError *error = [[NSError alloc] initWithDomain:[NSString stringWithUTF8String:err] code:res userInfo:nil];
-            if(result)result(error);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if(result)result(error);
+            });
         }else{
-            if(result)result(nil);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if(result)result(nil);
+            });
         }
      });
 }
@@ -81,7 +85,9 @@
 {
     dispatch_async(self.taskQueue, ^{
         SQLiteResult *res = [self execSql:sql];
-        if(result)result(res);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if(result)result(res);
+        });
     });
 }
 
