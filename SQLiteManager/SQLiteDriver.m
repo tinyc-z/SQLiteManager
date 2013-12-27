@@ -45,23 +45,13 @@
             if (sqlite3_exec(_dbHandler, "PRAGMA journal_mode=WAL;", NULL, NULL, &errorMsg) != SQLITE_OK) {
                 NSLog(@"Failed to set WAL mode: %s", errorMsg);
             }
+            sqlite3_wal_checkpoint(_dbHandler, NULL);
 			return self;
 		}
         
 	}
 	return nil;
 }
-
-- (void)checkAndCreateDatabase:(NSString *)database {
-	NSFileManager *fileManager = [NSFileManager defaultManager];
-	if(! [fileManager fileExistsAtPath:self.dbPath]) {
-        [fileManager createFileAtPath:self.dbPath contents:nil attributes:nil];
-        //		NSString *databasePathFromApp = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:database];
-        //		[fileManager copyItemAtPath:databasePathFromApp toPath:self.dbPath error:nil];
-	}
-}
-
-//- ()
 
 - (void)execSql:(NSString *)sql result:(void(^)(NSError* err))result
 {
