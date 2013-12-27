@@ -17,6 +17,12 @@
 @implementation SQLiteDriver
 
 
+- (void)dealloc
+{
+    [self close];
+}
+
+
 - (id)initWithDatabase:(NSString *)database
 {
     
@@ -25,7 +31,7 @@
         self.taskQueue=dispatch_queue_create("sqlite.q", DISPATCH_QUEUE_SERIAL);
         
         NSArray *documentPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-		NSString *documentsDir = [[documentPaths objectAtIndex:0] stringByAppendingString:@"/SQLite/"];
+		NSString *documentsDir = [[documentPaths objectAtIndex:0] stringByAppendingString:@"/WOWSQLite/"];
         
         if (![[NSFileManager defaultManager] fileExistsAtPath:documentsDir]) {
             [[NSFileManager defaultManager] createDirectoryAtPath:documentsDir withIntermediateDirectories:YES attributes:nil error:nil];
@@ -33,10 +39,14 @@
         
         self.dbPath = [documentsDir stringByAppendingPathComponent:database];
         
-        //		[self checkAndCreateDatabase:database];
 		if(SQLITE_OK == sqlite3_open([self.dbPath UTF8String], &_dbHandler)) {
+            char *errorMsg;
+            if (sqlite3_exec(_dbHandler, "PRAGMA journal_mode=WAL;", NULL, NULL, &errorMsg) != SQLITE_OK) {
+                NSLog(@"Failed to set WAL mode: %s", errorMsg);
+            }
 			return self;
 		}
+        
 	}
 	return nil;
 }
@@ -50,33 +60,36 @@
 	}
 }
 
--(BOOL)execSql:(NSString *)sql Error:(NSError **)error
+//- ()
+
+- (void)execSql:(NSString *)sql result:(void(^)(NSError* err))result
 {
     dispatch_async(self.taskQueue, ^{
         char *err;
         int res=sqlite3_exec(self.dbHandler, [sql UTF8String], NULL, NULL, &err);
-        if ( res!= SQLITE_OK) {
-            if (error) {
-                *error=[[NSError alloc] initWithDomain:[NSString stringWithUTF8String:err] code:res userInfo:nil];
-            }
+        if (res!= SQLITE_OK) {
+            NSError *error = [[NSError alloc] initWithDomain:[NSString stringWithUTF8String:err] code:res userInfo:nil];
+            if(result)result(error);
+        }else{
+            if(result)result(nil);
         }
      });
-    return YES;
 }
 
-- (void)parseSql:(NSString *)sql call:(void(^)(SQLiteResult* res))result
+- (void)execSql:(NSString *)sql call:(void(^)(SQLiteResult* res))result
 {
     dispatch_async(self.taskQueue, ^{
-        SQLiteResult *res = [self parseSql:sql];
-        result(res);
+        SQLiteResult *res = [self execSql:sql];
+        if(result)result(res);
     });
 }
 
-- (SQLiteResult* )parseSql:(NSString *)sql
+- (SQLiteResult* )execSql:(NSString *)sql
 {
     SQLiteResult* res = [[SQLiteResult alloc] init];
+    res.sql=sql;
 	sqlite3_stmt *compiledStatement;
-	const char *sqlStatement = [[NSString stringWithString:sql] UTF8String];
+	const char *sqlStatement = [sql UTF8String];
 	res.code= sqlite3_prepare_v2(self.dbHandler, sqlStatement, -1, &compiledStatement, NULL);
 	if(SQLITE_OK != res.code) {
 		res.msg = [NSString stringWithUTF8String:sqlite3_errmsg(self.dbHandler)];
@@ -84,10 +97,11 @@
 	}
     int resCount=sqlite3_data_count(compiledStatement);
     res.data=[[NSMutableArray alloc] initWithCapacity:resCount];
-    BOOL run=YES;
     NSMutableArray *fields=[[NSMutableArray alloc] init];
     res.fileds=fields;
     int columnNum;
+    BOOL run=YES;
+    NSMutableDictionary *rowData;
     while (sqlite3_step(compiledStatement)==SQLITE_ROW) {
         if (run) {
             columnNum = sqlite3_column_count(compiledStatement);
@@ -97,7 +111,7 @@
             }
             run=NO;
         }
-        NSMutableDictionary *rowData = [[NSMutableDictionary alloc] initWithCapacity:columnNum];
+        rowData = [[NSMutableDictionary alloc] initWithCapacity:columnNum];
 		for (int i = 0; i < columnNum; i ++) {
             char *text=(char *)sqlite3_column_text(compiledStatement, i);
 			if (NULL != text) {
@@ -106,10 +120,10 @@
                 [rowData setValue:[NSNull null] forKey:fields[i]];
 			}
 		}
-        
 		[res.data addObject:rowData];
 	}
-	sqlite3_reset(compiledStatement);
+//	sqlite3_reset(compiledStatement);
+    sqlite3_finalize(compiledStatement);
 	return res;
 }
 
@@ -119,7 +133,7 @@
 - (void)close
 {
     sqlite3_close(_dbHandler);
-    
+    _dbHandler=NULL;
 }
 
 @end

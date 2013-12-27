@@ -15,13 +15,25 @@
 
 @interface SQLiteCondition : NSObject
 
-- (SQLiteCondition *)initWitTab:(NSString *)name;
-- (SQLiteCondition *)creatTab:(NSString *)name ifNotExists:(NSString *)fields,...;
+- (SQLiteCondition *)initWitTabName:(NSString *)name;
+
 - (SQLiteCondition *)limit:(NSInteger)count;
 - (SQLiteCondition *)page:(NSInteger)page;
+
 - (SQLiteCondition *)orderBy:(NSString *)order;
+- (SQLiteCondition *)descOrderBy:(NSString *)order;
+- (SQLiteCondition *)ascOrderBy:(NSString *)order;
+
 - (SQLiteCondition *)fields:(id)fields;
+- (SQLiteCondition *)groupBy:(id)fields;
+
 - (SQLiteCondition *)where:(id)condition;
 
 - (NSString *)selectSql;
+- (NSString *)countSql;
+- (NSString *)insertSql:(NSArray *)rows;
+- (NSString *)deleteSql;
+- (NSString *)updateSql:(NSArray *)values;
+
+- (void)clean;
 @end

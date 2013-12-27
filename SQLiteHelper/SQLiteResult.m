@@ -30,7 +30,7 @@
 
 -(NSString *)description
 {
-    return [NSString stringWithFormat:@"code:%d\nmsg:%@\ndata:%@",self.code,self.msg,[self.data description]];
+    return [NSString stringWithFormat:@"code:%d\nmsg:%@\nsql:%@\ndata:%@",self.code,self.msg,self.sql,[self.data description]];
 }
 
 @end

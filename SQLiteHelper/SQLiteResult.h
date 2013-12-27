@@ -12,9 +12,11 @@
 @interface SQLiteResult : NSObject
 
 @property (nonatomic, assign)NSInteger code;
-@property (nonatomic, retain)NSString *msg;
-@property (nonatomic, retain)NSMutableArray* data;
-@property (nonatomic, retain)NSMutableArray* fileds;
+@property (nonatomic, strong)NSString *msg;
+@property (nonatomic, strong)NSString *sql;
+
+@property (nonatomic, strong)NSMutableArray* data;
+@property (nonatomic, strong)NSMutableArray* fileds;
 
 - (NSDictionary*)objectAtIndex:(NSUInteger)index;
 - (NSInteger)count;

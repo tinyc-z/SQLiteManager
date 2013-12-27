@@ -14,8 +14,6 @@
 
 
 @interface SQLiteManager()
-@property(nonatomic,retain)NSString *dbName;
-@property(nonatomic,retain)NSMutableArray *dbConnectPool;
 
 //测试发现，两条连接效率比较均衡，反而如果用容器来产生N条连接更耗时
 @property(nonatomic,retain)SQLiteDriver *sqliter1;
@@ -34,9 +32,9 @@ static NSMutableDictionary *dbMgrPool;
     self=[super init];
     if (self) {
         self.dbName=dbName;
-        self.dbConnectPool=[[NSMutableArray alloc] initWithCapacity:2];
         self.sqliter1 = [[SQLiteDriver alloc] initWithDatabase:self.dbName];
         self.sqliter2 = [[SQLiteDriver alloc] initWithDatabase:self.dbName];
+        self.dbPath=self.sqliter1.dbPath;
     }
     return self;
 }
@@ -44,11 +42,13 @@ static NSMutableDictionary *dbMgrPool;
 
 static NSString *mlobck=@"dbMgrMap";
 
-+ (id)connetdb:(NSString *)dbName{
-    @synchronized(self){
-        if (!dbMgrPool) {
++ (id)connectdb:(NSString *)dbName{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
             dbMgrPool=[[NSMutableDictionary alloc] initWithCapacity:5];
-        }
+    });
+    
+    @synchronized(self){
         id db=dbMgrPool[dbName];
         if (db){
             return db;
@@ -75,7 +75,6 @@ static NSString *mlobck=@"dbMgrMap";
 }
 
 
-
 - (SQLiteDriver *)sqliter
 {
     if (arc4random()%2==1) {
@@ -85,37 +84,69 @@ static NSString *mlobck=@"dbMgrMap";
     }
 }
 
-
-- (SQLiteManager *)addTask:(SQLiteCondition *)task back:(void(^)(id result))callBack
+- (void)creatTab:(NSString *)tabName ifNotExists:(NSString *)fields,...
 {
-//    if (task.taskType==SQLiteTaskTypeWrite) {
-//        [self.writeSqliter parseSql:@"" call:^(SQLiteResult *res) {
-//            callBack(res);
-//        }];
-//    }else{
-//        [self.readSqliter parseSql:@"" call:^(SQLiteResult *res) {
-//            callBack(res);
-//        }];
-//    }
-    return self;
+    NSMutableString *tfields=[[NSMutableString alloc] initWithFormat:@"%@",fields];
+    va_list argList;
+    va_start(argList,fields);
+    NSString *arg;
+    while ((arg=va_arg(argList, NSString *))) {
+        [tfields appendFormat:@",%@",arg];
+    }
+    va_end(argList);
+    NSString *sql=[[NSString alloc] initWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (%@)",tabName,tfields];
+    SQLiteDriver *sqliter = [[SQLiteDriver alloc] initWithDatabase:self.dbName];
+    [sqliter execSql:sql result:^(NSError *err) {
+        if (err) {
+            NSLog(@"%@",err);
+        }
+    }];
 }
 
-- (void)select:(SQLiteCondition *)cdt back:(void(^)(SQLiteResult *res))callBack
+- (void)execute:(NSString *)sql back:(void(^)(SQLiteResult *res))callBack
 {
-    [self.sqliter parseSql:cdt.selectSql call:^(SQLiteResult *res) {
+    [self.sqliter execSql:sql call:^(SQLiteResult *res) {
         callBack(res);
     }];
 }
 
-//- (void)doit
-//{
-//
-//    SQLiteDriver *d=[[SQLiteDriver alloc] initWithDatabase:@"tab1.sqlite" readOnly:NO];
-//    [d execSql:@"CREATE TABLE IF NOT EXISTS PERSONINFO (ID INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, age INTEGER, address TEXT)" Error:nil];
-////    [d execSql:@"INSERT INTO 'PERSONINFO' ('name', 'age', 'address') VALUES ('张三', '23', NULL)" Error:nil];
-//
-//    SQLiteResult *res2=[d parseSql:@"SELECT * FROM PERSONINFO"];
-//
-//}
+- (void)select:(SQLiteCondition *)cdt back:(void(^)(SQLiteResult *res))callBack
+{
+    [self execute:cdt.selectSql back:^(SQLiteResult *res) {
+          callBack(res);
+    }];
+}
+
+- (void)count:(SQLiteCondition *)cdt back:(void(^)(SQLiteResult *res))callBack
+{
+    [self execute:cdt.countSql back:^(SQLiteResult *res) {
+        callBack(res);
+    }];
+}
+
+- (void)add:(NSArray *)rows condition:(SQLiteCondition *)cdt back:(void(^)(SQLiteResult *res))callBack
+{
+    NSString *sql=[cdt insertSql:rows];
+    [self execute:sql back:^(SQLiteResult *res) {
+        callBack(res);
+    }];
+    
+}
+
+- (void)del:(SQLiteCondition *)cdt back:(void(^)(SQLiteResult *res))callBack
+{
+    [self execute:cdt.deleteSql back:^(SQLiteResult *res) {
+        callBack(res);
+    }];
+}
+
+
+- (void)update:(NSArray *)values condition:(SQLiteCondition *)cdt back:(void(^)(SQLiteResult *res))callBack
+{
+    NSString *sql=[cdt updateSql:values];
+    [self execute:sql back:^(SQLiteResult *res) {
+        callBack(res);
+    }];
+}
 
 @end
