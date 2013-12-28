@@ -4,7 +4,8 @@ SQLiteManager
 a sqlite thread safety tools in ios
 
 
-
+#support
+	ios >= 5.0
 
 #usage
 
