@@ -14,4 +14,5 @@ Pod::Spec.new do |s|
   s.source_files  = 'Classes', 'SQLiteManager/*.{h,m}'
   s.exclude_files = 'Classes/Exclude'
   s.requires_arc = true
+  s.libraries   = 'libsqlite3.dylib'
 end
