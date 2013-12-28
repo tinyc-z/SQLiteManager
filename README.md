@@ -7,7 +7,6 @@ a sqlite thread safety tools in ios
 
 
 #usage
-=============
 
 >init
 =
