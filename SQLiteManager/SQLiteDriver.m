@@ -55,6 +55,13 @@
 
 - (void)execSql:(NSString *)sql result:(void(^)(NSError* err))result
 {
+    if ([sql length]==0) {
+        NSError *error = [[NSError alloc] initWithDomain:@"bad sql" code:-1 userInfo:nil];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if(result)result(error);
+        });
+        return;
+    }
     dispatch_async(self.taskQueue, ^{
         char *err;
         int res=sqlite3_exec(self.dbHandler, [sql UTF8String], NULL, NULL, &err);
@@ -73,6 +80,12 @@
 
 - (void)execSql:(NSString *)sql call:(void(^)(SQLiteResult* res))result
 {
+    if ([sql length]==0) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if(result)result(nil);
+        });
+        return;
+    }
     dispatch_async(self.taskQueue, ^{
         SQLiteResult *res = [self execSql:sql];
         dispatch_async(dispatch_get_main_queue(), ^{
