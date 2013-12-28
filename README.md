@@ -9,6 +9,14 @@ a sqlite thread safety tools in ios
 
 #usage
 
+
+>import
+=
+	pod 'SQLiteManager', :podspec => 'https://raw.github.com/iBcker/SQLiteManager/master/SQLiteManager.podspec'
+	or
+	git clone git@github.com:iBcker/SQLiteManager.git
+
+
 >init
 =
 	SQLiteManager *mnger=[SQLiteManager connectdb:@"tab1.sqlite"];
