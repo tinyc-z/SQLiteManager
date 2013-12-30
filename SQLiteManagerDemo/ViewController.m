@@ -18,7 +18,7 @@
 - (IBAction)onStart:(id)sender
 {
     
-    NSString *tbName=@"friends5";
+    NSString *tbName=@"friends";
     
     SQLiteManager *mnger=[SQLiteManager connectdb:@"tab1.sqlite"];
     [mnger creatTab:tbName ifNotExists:@"ID INTEGER PRIMARY KEY AUTOINCREMENT",
@@ -31,10 +31,7 @@
     [cdt fields:@[@"name",@"age",@"address"]];
     
     //insert data
-    [mnger add:@[@[@"xiaoming",@21,@"北海"],@[@"huazai",@20,@"深圳"],@[@"xiaoxiao",@13,@"广州"]] condition:cdt back:^(SQLiteResult *res) {
-            NSAssert(res.code==0, @"insert error");
-            NSLog(@"%@",res);
-    }];
+    [mnger add:@[@[@"xiaoming",@21,@"北海"],@[@"huazai",@20,@"深圳"],@[@"xiaoxiao",@13,@"广州"]] condition:cdt back:nil];
 
     //select
     [cdt clean];

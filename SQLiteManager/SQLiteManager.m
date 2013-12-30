@@ -105,48 +105,35 @@ static NSString *mlobck=@"dbMgrMap";
 
 - (void)execute:(NSString *)sql back:(void(^)(SQLiteResult *res))callBack
 {
-    [self.sqliter execSql:sql call:^(SQLiteResult *res) {
-        callBack(res);
-    }];
+    [self.sqliter execSql:sql call:callBack];
 }
 
 - (void)select:(SQLiteCondition *)cdt back:(void(^)(SQLiteResult *res))callBack
 {
-    [self execute:cdt.selectSql back:^(SQLiteResult *res) {
-          callBack(res);
-    }];
+    [self execute:cdt.selectSql back:callBack];
 }
 
 - (void)count:(SQLiteCondition *)cdt back:(void(^)(SQLiteResult *res))callBack
 {
-    [self execute:cdt.countSql back:^(SQLiteResult *res) {
-        callBack(res);
-    }];
+    [self execute:cdt.countSql back:callBack];
 }
 
 - (void)add:(NSArray *)rows condition:(SQLiteCondition *)cdt back:(void(^)(SQLiteResult *res))callBack
 {
     NSString *sql=[cdt insertSql:rows];
-    [self execute:sql back:^(SQLiteResult *res) {
-        callBack(res);
-    }];
-    
+    [self execute:sql back:callBack];
 }
 
 - (void)del:(SQLiteCondition *)cdt back:(void(^)(SQLiteResult *res))callBack
 {
-    [self execute:cdt.deleteSql back:^(SQLiteResult *res) {
-        callBack(res);
-    }];
+    [self execute:cdt.deleteSql back:callBack];
 }
 
 
 - (void)update:(NSArray *)values condition:(SQLiteCondition *)cdt back:(void(^)(SQLiteResult *res))callBack
 {
     NSString *sql=[cdt updateSql:values];
-    [self execute:sql back:^(SQLiteResult *res) {
-        callBack(res);
-    }];
+    [self execute:sql back:callBack];
 }
 
 @end

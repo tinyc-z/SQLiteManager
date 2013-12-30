@@ -56,24 +56,30 @@
 - (void)execSql:(NSString *)sql result:(void(^)(NSError* err))result
 {
     if ([sql length]==0) {
-        NSError *error = [[NSError alloc] initWithDomain:@"bad sql" code:-1 userInfo:nil];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if(result)result(error);
-        });
+        if(result){
+            NSError *error = [[NSError alloc] initWithDomain:@"bad sql" code:-1 userInfo:nil];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                result(error);
+            });
+        }
         return;
     }
     dispatch_async(self.taskQueue, ^{
         char *err;
         int res=sqlite3_exec(self.dbHandler, [sql UTF8String], NULL, NULL, &err);
         if (res!= SQLITE_OK) {
-            NSError *error = [[NSError alloc] initWithDomain:[NSString stringWithUTF8String:err] code:res userInfo:nil];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if(result)result(error);
-            });
+            if(result){
+                NSError *error = [[NSError alloc] initWithDomain:[NSString stringWithUTF8String:err] code:res userInfo:nil];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    result(error);
+                });
+            }
         }else{
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if(result)result(nil);
-            });
+            if(result){
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    result(nil);
+                });
+            }
         }
      });
 }
@@ -81,16 +87,22 @@
 - (void)execSql:(NSString *)sql call:(void(^)(SQLiteResult* res))result
 {
     if ([sql length]==0) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if(result)result(nil);
-        });
+        if(result){
+            dispatch_async(dispatch_get_main_queue(), ^{
+                result(nil);
+            });
+        }
         return;
     }
     dispatch_async(self.taskQueue, ^{
-        SQLiteResult *res = [self execSql:sql];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if(result)result(res);
-        });
+        if (result) {
+            SQLiteResult *res = [self execSql:sql];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                result(res);
+            });
+        }else{
+            [self execSql:sql result:nil];
+        }
     });
 }
 
