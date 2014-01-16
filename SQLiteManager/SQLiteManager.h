@@ -108,8 +108,8 @@
 /**
  *  更新数据库
  *
- *  @param values   键值对应字典
- *                  eg. @{@"name":"lili",@"age":@19}
+ *  @param values   键值对应值数组
+ *                  eg. @[@"xiaoming",@(18)]
  *
  *  @param cdt      条件,指定删除条件等
  *                  ps:为了防止误操作清空整个表，此方法必须包含where条件，不然无法执行

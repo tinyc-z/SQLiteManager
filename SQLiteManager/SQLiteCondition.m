@@ -62,7 +62,9 @@
 
 - (SQLiteCondition *)fields:(id)fields
 {
-    if ([fields isKindOfClass:[NSArray class]]) {
+    if (!fields) {
+        self.fields=nil;
+    }else if ([fields isKindOfClass:[NSArray class]]) {
         int count=[fields count];
         NSMutableString *fieldsStr=[[NSMutableString alloc] initWithCapacity:count];
         for (int i=0;i<count;i++) {
@@ -83,7 +85,9 @@
 
 - (SQLiteCondition *)groupBy:(id)fields
 {
-    if ([fields isKindOfClass:[NSArray class]]) {
+    if (!fields) {
+        self.groupBy=nil;
+    }else if ([fields isKindOfClass:[NSArray class]]) {
         int count=[fields count];
         NSMutableString *fieldsStr=[[NSMutableString alloc] initWithCapacity:count];
         for (int i=0;i<count;i++) {
@@ -104,7 +108,9 @@
 
 - (SQLiteCondition *)where:(id)condition
 {
-    if ([condition isKindOfClass:[NSArray class]]) {
+    if(!condition){
+        self.where=nil;
+    }else if ([condition isKindOfClass:[NSArray class]]) {
         
     }else if([condition isKindOfClass:[NSString class]]){
         self.where=condition;
