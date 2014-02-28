@@ -162,6 +162,10 @@
         [sql appendFormat:@" GROUP BY %@",self.groupBy];
     }
     
+    if ([_order length]>0) {
+        [sql appendFormat:@" ORDER BY %@",self.order];
+    }
+    
     if (_limit>0) {
         [sql appendFormat:@" LIMIT %d,%d",self.limit*self.page,self.limit*(self.page+1)];
     }
