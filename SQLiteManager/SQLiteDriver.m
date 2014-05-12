@@ -46,6 +46,7 @@
                 NSLog(@"Failed to set WAL mode: %s", errorMsg);
             }
             sqlite3_wal_checkpoint(_dbHandler, NULL);
+            free(errorMsg);
 			return self;
 		}
         
@@ -81,6 +82,7 @@
                 });
             }
         }
+        free(err);
      });
 }
 
