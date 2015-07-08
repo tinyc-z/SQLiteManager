@@ -65,7 +65,7 @@
     if (!fields) {
         self.fields=nil;
     }else if ([fields isKindOfClass:[NSArray class]]) {
-        int count=[fields count];
+        NSInteger count=[fields count];
         NSMutableString *fieldsStr=[[NSMutableString alloc] initWithCapacity:count];
         for (int i=0;i<count;i++) {
             if (i==count-1) {
@@ -88,7 +88,7 @@
     if (!fields) {
         self.groupBy=nil;
     }else if ([fields isKindOfClass:[NSArray class]]) {
-        int count=[fields count];
+        NSInteger count=[fields count];
         NSMutableString *fieldsStr=[[NSMutableString alloc] initWithCapacity:count];
         for (int i=0;i<count;i++) {
             if (i==count-1) {
@@ -139,7 +139,7 @@
     }
     
     if (_limit>0) {
-        [sql appendFormat:@" LIMIT %d,%d",self.limit*self.page,self.limit*(self.page+1)];
+        [sql appendFormat:@" LIMIT %zd,%zd",self.limit*self.page,self.limit*(self.page+1)];
     }
     return sql;
 }
@@ -167,7 +167,7 @@
     }
     
     if (_limit>0) {
-        [sql appendFormat:@" LIMIT %d,%d",self.limit*self.page,self.limit*(self.page+1)];
+        [sql appendFormat:@" LIMIT %zd,%zd",self.limit*self.page,self.limit*(self.page+1)];
     }
     return sql;
 }
@@ -184,11 +184,11 @@
         NSMutableString *valuesStr=[[NSMutableString alloc] init];
         
         if ([rows[0] isKindOfClass:[NSArray class]]) {
-            int countj = [rows count];
+            NSInteger countj = [rows count];
             for (int i=0;i<countj;i++) {
                 NSArray *vs=rows[i];
                 [valuesStr appendString:@"("];
-                int count = [vs count];
+                NSInteger count = [vs count];
                 for (int j=0;j<count;j++) {
                     if (count==j+1) {
                         [valuesStr appendString:[self getSqlValue:vs[j]]];
@@ -205,7 +205,7 @@
             }
         }else{
             [valuesStr appendString:@"("];
-            int count = [rows count];
+            NSInteger count = [rows count];
             for (int i=0;i<count;i++) {
                 if (count==i+1) {
                     [valuesStr appendString:[self getSqlValue:rows[i]]];
@@ -233,7 +233,7 @@
     }
 
     if (_limit>0) {
-        [sql appendFormat:@" LIMIT %d,%d",self.limit*self.page,self.limit*(self.page+1)];
+        [sql appendFormat:@" LIMIT %zd,%zd",self.limit*self.page,self.limit*(self.page+1)];
     }
 
     return sql;
@@ -244,7 +244,7 @@
     NSMutableString *sql=[[NSMutableString alloc] initWithFormat:@"UPDATE `%@` SET ",self.tabName];
     if (_fields) {
         NSArray *fiels=[self.fields componentsSeparatedByString:@","];
-        int num = [fiels count]>[values count]?[values count]:[fiels count];
+        NSInteger num = [fiels count]>[values count]?[values count]:[fiels count];
         for (int i=0;i<num;i++) {
             if (i==num-1) {
                 [sql appendFormat:@"%@=%@",fiels[i],[self getSqlValue:values[i]]];
@@ -264,7 +264,7 @@
     }
     
     if (_limit>0) {
-        [sql appendFormat:@" LIMIT %d,%d",self.limit*self.page,self.limit*(self.page+1)];
+        [sql appendFormat:@" LIMIT %zd,%zd",self.limit*self.page,self.limit*(self.page+1)];
     }
     
     return sql;
