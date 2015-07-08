@@ -27,36 +27,50 @@
 static NSMutableDictionary *dbMgrPool;
 
 
-- (id)initWithDatabase:(NSString *)dbName
+- (id)initWithDatabaseFile:(NSString *)dbPath
 {
     self=[super init];
     if (self) {
-        self.dbName=dbName;
-        self.sqliter1 = [[SQLiteDriver alloc] initWithDatabase:self.dbName];
-        self.sqliter2 = [[SQLiteDriver alloc] initWithDatabase:self.dbName];
-        self.dbPath=self.sqliter1.dbPath;
+        _dbPath=dbPath;
+        
+        NSString *documentsDir = [dbPath stringByDeletingLastPathComponent];
+        if (![[NSFileManager defaultManager] fileExistsAtPath:documentsDir]) {
+            [[NSFileManager defaultManager] createDirectoryAtPath:documentsDir withIntermediateDirectories:YES attributes:nil error:NULL];
+        }
+        
+        self.sqliter1 = [[SQLiteDriver alloc] initWithDbPathPath:self.dbPath];
+        
     }
     return self;
 }
 
+-(SQLiteDriver *)sqliter2
+{
+    if (!_sqliter2) {
+        @synchronized(self) {
+            if (!_sqliter2) {
+                _sqliter2 = [[SQLiteDriver alloc] initWithDbPathPath:self.dbPath];
+            }
+        }
+    }
+    return _sqliter2;
+}
 
 static NSString *mlobck=@"dbMgrMap";
 
 + (id)connectdb:(NSString *)dbName{
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-            dbMgrPool=[[NSMutableDictionary alloc] initWithCapacity:5];
+        dbMgrPool=[[NSMutableDictionary alloc] initWithCapacity:5];
     });
     
-    @synchronized(self){
+    @synchronized(mlobck){
         id db=dbMgrPool[dbName];
         if (db){
             return db;
         }else{
-            db = [[SQLiteManager alloc] initWithDatabase:dbName];
-            @synchronized(mlobck){
-                dbMgrPool[dbName]=db;
-            }
+            db = [[SQLiteManager alloc] initWithDatabaseFile:dbName];
+            dbMgrPool[dbName]=db;
             return db;
         }
     }
@@ -65,26 +79,31 @@ static NSString *mlobck=@"dbMgrMap";
 - (void)close:(NSString *)dbName
 {
     if (dbMgrPool) {
-        SQLiteManager *mgr=(id)dbMgrPool[dbName];
-        [mgr.sqliter1 close];
-        [mgr.sqliter2 close];
         @synchronized(mlobck){
+            SQLiteManager *mgr=(id)dbMgrPool[dbName];
+            [mgr.sqliter1 close];
+            [mgr->_sqliter2 close];
             [dbMgrPool removeObjectForKey:dbName];
         }
     }
 }
 
-
 - (SQLiteDriver *)sqliter
 {
-    if (arc4random()%2==1) {
+    if (!self.sqliter1.isRunning) {
         return self.sqliter1;
-    }else{
+    }else if(!self.sqliter2.isRunning){
         return self.sqliter2;
+    }else{
+        if (arc4random()%2==1) {
+            return self.sqliter1;
+        }else{
+            return self.sqliter2;
+        }
     }
 }
 
-- (void)creatTab:(NSString *)tabName ifNotExists:(NSString *)fields,...
+- (BOOL)creatTab:(NSString *)tabName ifNotExists:(NSString *)fields,...
 {
     NSMutableString *tfields=[[NSMutableString alloc] initWithFormat:@"%@",fields];
     va_list argList;
@@ -95,12 +114,8 @@ static NSString *mlobck=@"dbMgrMap";
     }
     va_end(argList);
     NSString *sql=[[NSString alloc] initWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (%@)",tabName,tfields];
-    SQLiteDriver *sqliter = [[SQLiteDriver alloc] initWithDatabase:self.dbName];
-    [sqliter execSql:sql result:^(NSError *err) {
-        if (err) {
-            NSLog(@"%@",err);
-        }
-    }];
+    SQLiteResult *res = [self.sqliter execSql:sql];
+    return res.code==0;
 }
 
 - (void)execute:(NSString *)sql back:(void(^)(SQLiteResult *res))callBack

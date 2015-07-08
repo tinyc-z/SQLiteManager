@@ -14,8 +14,7 @@
 
 @interface SQLiteManager : NSObject
 
-@property(nonatomic,retain)NSString *dbPath;
-@property(nonatomic,retain)NSString *dbName;
+@property(nonatomic,retain,readonly)NSString *dbPath;
 
 /**
  *  创建数据库连接
@@ -26,7 +25,7 @@
  *
  *  @return 数据库管理对象
  */
-+ (id)connectdb:(NSString *)dbName;
++ (id)connectdb:(NSString *)dbFilePath;
 
 
 /**
@@ -35,7 +34,7 @@
  *
  *  @param dbName 数据库名称
  */
-- (void)close:(NSString *)dbName;
+- (void)close:(NSString *)dbFilePath;
 
 
 
@@ -51,7 +50,7 @@
  *                      @"address TEXT",nil
  *
  */
-- (void)creatTab:(NSString *)name ifNotExists:(NSString *)fields,...;
+- (BOOL)creatTab:(NSString *)name ifNotExists:(NSString *)fields,...;
 
 
 /**

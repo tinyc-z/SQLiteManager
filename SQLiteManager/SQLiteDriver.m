@@ -24,21 +24,13 @@
 }
 
 
-- (id)initWithDatabase:(NSString *)database
+- (id)initWithDbPathPath:(NSString *)path
 {
     
 	if (self = [super init]) {
-        
+        self.isRunning=NO;
         self.taskQueue=dispatch_queue_create("sqlite.q", DISPATCH_QUEUE_SERIAL);
-        
-        NSArray *documentPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-		NSString *documentsDir = [[documentPaths objectAtIndex:0] stringByAppendingString:@"/WOWSQLite/"];
-        
-        if (![[NSFileManager defaultManager] fileExistsAtPath:documentsDir]) {
-            [[NSFileManager defaultManager] createDirectoryAtPath:documentsDir withIntermediateDirectories:YES attributes:nil error:nil];
-        }
-        
-        self.dbPath = [documentsDir stringByAppendingPathComponent:database];
+        self.dbPath = path ;
         
 		if(SQLITE_OK == sqlite3_open([self.dbPath UTF8String], &_dbHandler)) {
             char *errorMsg;
@@ -49,7 +41,6 @@
             free(errorMsg);
 			return self;
 		}
-        
 	}
 	return nil;
 }
@@ -66,6 +57,7 @@
         return;
     }
     dispatch_async(self.taskQueue, ^{
+        self.isRunning=YES;
         char *err;
         int res=sqlite3_exec(self.dbHandler, [sql UTF8String], NULL, NULL, &err);
         if (res!= SQLITE_OK) {
@@ -82,6 +74,7 @@
                 });
             }
         }
+        self.isRunning=NO;
         free(err);
      });
 }
@@ -90,25 +83,34 @@
 {
     if ([sql length]==0) {
         if(result){
-            dispatch_async(dispatch_get_main_queue(), ^{
-                result(nil);
-            });
+            result(nil);
         }
         return;
     }
     dispatch_async(self.taskQueue, ^{
+        self.isRunning=YES;
         if (result) {
-            SQLiteResult *res = [self execSql:sql];
+            SQLiteResult *res = [self _execSql:sql];
             dispatch_async(dispatch_get_main_queue(), ^{
                 result(res);
             });
         }else{
             [self execSql:sql result:nil];
         }
+        self.isRunning=NO;
     });
 }
 
 - (SQLiteResult* )execSql:(NSString *)sql
+{
+    __block SQLiteResult *res;
+    dispatch_sync(self.taskQueue, ^{
+        res = [self _execSql:sql];
+    });
+    return res;
+}
+
+- (SQLiteResult* )_execSql:(NSString *)sql
 {
     SQLiteResult* res = [[SQLiteResult alloc] init];
     res.sql=sql;

@@ -14,9 +14,11 @@
 
 @property (nonatomic, strong)NSString *dbPath;
 @property (nonatomic, assign)sqlite3 *dbHandler;
+@property (atomic, assign)BOOL isRunning;
 
+- (id)initWithDbPathPath:(NSString *)dbFilePath;
 
-- (id)initWithDatabase:(NSString *)database;
+- (SQLiteResult* )execSql:(NSString *)sql;
 
 - (void)execSql:(NSString *)sql result:(void(^)(NSError* err))result;
 
