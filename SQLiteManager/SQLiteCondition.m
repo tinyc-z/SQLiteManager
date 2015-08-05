@@ -273,9 +273,9 @@
 - (NSString *)getSqlValue:(id)v
 {
     if ([v isKindOfClass:[NSNumber class]]) {
-        return [v description];
+        return [NSString stringWithFormat:@"%@",v];
     }else{
-        return [NSString stringWithFormat:@"'%@'",[v description]];
+        return [[NSString stringWithFormat:@"'%@'",v] stringByReplacingOccurrencesOfString:@"'" withString:@"\'"];
     }
 }
 
@@ -287,6 +287,11 @@
     self.order=nil;
     self.page=0;
     self.limit=0;
+}
+
+- (NSString *)debugDescription
+{
+    return [NSString stringWithFormat:@"|-%@ %p\n| where:%@\n| fields:%@\n| groupBy:%@\n| order:%@\n| page:%zd\n| limit:%zd",[self class],self,self.where,self.fields,self.groupBy,self.order,self.page,self.limit];
 }
 
 @end

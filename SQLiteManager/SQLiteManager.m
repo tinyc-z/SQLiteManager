@@ -15,10 +15,7 @@
 
 @interface SQLiteManager()
 
-//测试发现，两条连接效率比较均衡，反而如果用容器来产生N条连接更耗时
-@property(nonatomic,retain)SQLiteDriver *sqliter1;
-@property(nonatomic,retain)SQLiteDriver *sqliter2;
-
+@property(nonatomic,retain)SQLiteDriver *sqliter;
 
 @end
 
@@ -38,22 +35,10 @@ static NSMutableDictionary *dbMgrPool;
             [[NSFileManager defaultManager] createDirectoryAtPath:documentsDir withIntermediateDirectories:YES attributes:nil error:NULL];
         }
         
-        self.sqliter1 = [[SQLiteDriver alloc] initWithDbPathPath:self.dbPath];
+        self.sqliter = [[SQLiteDriver alloc] initWithDbPathPath:self.dbPath];
         
     }
     return self;
-}
-
--(SQLiteDriver *)sqliter2
-{
-    if (!_sqliter2) {
-        @synchronized(self) {
-            if (!_sqliter2) {
-                _sqliter2 = [[SQLiteDriver alloc] initWithDbPathPath:self.dbPath];
-            }
-        }
-    }
-    return _sqliter2;
 }
 
 static NSString *mlobck=@"dbMgrMap";
@@ -81,27 +66,12 @@ static NSString *mlobck=@"dbMgrMap";
     if (dbMgrPool) {
         @synchronized(mlobck){
             SQLiteManager *mgr=(id)dbMgrPool[dbName];
-            [mgr.sqliter1 close];
-            [mgr->_sqliter2 close];
+            [mgr.sqliter close];
             [dbMgrPool removeObjectForKey:dbName];
         }
     }
 }
 
-- (SQLiteDriver *)sqliter
-{
-    if (!self.sqliter1.isRunning) {
-        return self.sqliter1;
-    }else if(!self.sqliter2.isRunning){
-        return self.sqliter2;
-    }else{
-        if (arc4random()%2==1) {
-            return self.sqliter1;
-        }else{
-            return self.sqliter2;
-        }
-    }
-}
 
 - (BOOL)creatTab:(NSString *)tabName ifNotExists:(NSString *)fields,...
 {

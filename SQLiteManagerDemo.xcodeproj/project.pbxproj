@@ -56,6 +56,7 @@
 /* Begin PBXFileReference section */
 		477AD8621784A5D3000F11E3 /* Categorysss.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Categorysss.h; sourceTree = "<group>"; };
 		477AD8631784A5D3000F11E3 /* Categorysss.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Categorysss.m; sourceTree = "<group>"; };
+		47B6AA211B72646F0068C9BE /* SQLiteManager.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = SQLiteManager.podspec; sourceTree = "<group>"; };
 		47DE44B6177A8DC50040A397 /* SQLiteManagerDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SQLiteManagerDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		47DE44B9177A8DC50040A397 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		47DE44BB177A8DC50040A397 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -112,6 +113,7 @@
 		47DE44AD177A8DC50040A397 = {
 			isa = PBXGroup;
 			children = (
+				47B6AA211B72646F0068C9BE /* SQLiteManager.podspec */,
 				477AD8621784A5D3000F11E3 /* Categorysss.h */,
 				477AD8631784A5D3000F11E3 /* Categorysss.m */,
 				47DE44EC177A92420040A397 /* libsqlite3.dylib */,

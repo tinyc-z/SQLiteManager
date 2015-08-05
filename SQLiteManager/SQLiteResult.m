@@ -28,9 +28,9 @@
     return [self.data count];
 }
 
--(NSString *)description
+-(NSString *)debugDescription
 {
-    return [NSString stringWithFormat:@"code:%zd\nmsg:%@\nsql:%@\ndata:%@",self.code,self.msg,self.sql,[self.data description]];
+    return [NSString stringWithFormat:@"<%@:%p\ncode:%zd\nmsg:%@\nsql:%@\ndata:%@\n>",self.class,self,self.code,self.msg,self.sql,[self.data debugDescription]];
 }
 
 @end

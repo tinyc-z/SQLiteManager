@@ -9,7 +9,6 @@
 #import "SQLiteDriver.h"
 
 @interface SQLiteDriver()
-
 @property(assign)dispatch_queue_t taskQueue;
 
 @end
@@ -33,12 +32,12 @@
         self.dbPath = path ;
         
 		if(SQLITE_OK == sqlite3_open([self.dbPath UTF8String], &_dbHandler)) {
-            char *errorMsg;
-            if (sqlite3_exec(_dbHandler, "PRAGMA journal_mode=WAL;", NULL, NULL, &errorMsg) != SQLITE_OK) {
-                NSLog(@"Failed to set WAL mode: %s", errorMsg);
-            }
-            sqlite3_wal_checkpoint(_dbHandler, NULL);
-            free(errorMsg);
+//            char *errorMsg;
+//            if (sqlite3_exec(_dbHandler, "PRAGMA journal_mode=WAL;", NULL, NULL, &errorMsg) != SQLITE_OK) {
+//                NSLog(@"Failed to set WAL mode: %s", errorMsg);
+//            }
+//            sqlite3_wal_checkpoint(_dbHandler, NULL);
+//            free(errorMsg);
 			return self;
 		}
 	}
@@ -125,7 +124,7 @@
     res.data=[[NSMutableArray alloc] initWithCapacity:resCount];
     NSMutableArray *fields=[[NSMutableArray alloc] init];
     res.fileds=fields;
-    int columnNum;
+    int columnNum=40;
     BOOL run=YES;
     NSMutableDictionary *rowData;
     while (sqlite3_step(compiledStatement)==SQLITE_ROW) {
@@ -160,6 +159,11 @@
 {
     sqlite3_close(_dbHandler);
     _dbHandler=NULL;
+}
+
+- (NSString *)debugDescription
+{
+    return [NSString stringWithFormat:@"<%@:%p isRunning:%zd dbPath:%@ >",self.class,self,self.isRunning,self.dbPath];
 }
 
 @end
